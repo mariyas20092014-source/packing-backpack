@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snow Leopard Packing Game - Fullscreen</title>
+    <!-- Importing a beautiful, playful font for the title and counter -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2c3e50;
+            font-family: sans-serif;
+            overflow: hidden; /* Prevents scrollbars */
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh; 
+            background-image: url('background.jpeg');
+            background-size: cover;
+            background-position: center;
+            overflow: hidden;
+        }
+
+        /* --- UI ELEMENTS --- */
+        #game-title {
+            position: absolute;
+            top: 30px;
+            width: 100%;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 42px;
+            color: #fff;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.6);
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #counter {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 48px;
+            color: #f1c40f;
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.6);
+            z-index: 100;
+            pointer-events: none;
+        }
+
+        #end-screen {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(44, 62, 80, 0.95);
+            border: 4px solid #f1c40f;
+            border-radius: 24px;
+            padding: 40px 60px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            gap: 40px;
+        }
+
+        #end-screen img {
+            width: 250px;
+            height: auto;
+        }
+
+        #end-screen .message {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 80px;
+            color: #fff;
+            text-shadow: 0 4px 15px rgba(241, 196, 15, 0.5);
+        }
+
+        /* --- GAME SPRITES --- */
+        .item {
+            position: absolute;
+            height: auto; 
+            z-index: 6; 
+            transition: left 0.5s ease, top 0.5s ease, transform 0.5s ease; 
+        }
+
+        .glow {
+            filter: drop-shadow(0 0 15px yellow) drop-shadow(0 0 25px yellow);
+        }
+
+        #leopard {
+            position: absolute;
+            width: 450px;
+            height: auto; 
+            cursor: grab;
+            z-index: 10;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        #leopard:active {
+            cursor: grabbing;
+        }
+
+        /* Stronger Glitter Effect */
+        .glitter-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 3; 
+            color: #fff;
+            opacity: 0;
+        }
+
+        @keyframes glitter-twinkle {
+            0% { opacity: 0; transform: scale(0) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.5) rotate(90deg); filter: drop-shadow(0 0 8px #f1c40f); }
+            100% { opacity: 0; transform: scale(0) rotate(180deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- UI -->
+        <div id="game-title">Jack has/doesn't have to take...</div>
+        <div id="counter">0 / 7</div>
+        
+        <div id="end-screen">
+            <img src="leopard2.gif" alt="Snow Leopard" draggable="false">
+            <div class="message">Good job!</div>
+        </div>
+        
+        <!-- The Backpack (z-index 5) -->
+        <img src="backpack.png" id="backpack" style="position: absolute; left: 84.9%; top: 66.4%; width: 187px; z-index: 5;" draggable="false">
+
+        <!-- Items 1-4 -->
+        <img src="1.png" id="item1" class="item" style="left: 6.4%; top: 54.0%; width: 69px;" draggable="false" data-type="pack" data-dest-left="84.2%" data-dest-top="61.2%" data-dest-rot="279deg">
+        <img src="2.png" id="item2" class="item" style="left: 18.6%; top: 86.1%; width: 91px;" draggable="false" data-type="pack" data-dest-left="85.0%" data-dest-top="61.8%" data-dest-rot="4deg">
+        <img src="3.png" id="item3" class="item" style="left: 27.9%; top: 54.2%; width: 51px;" draggable="false" data-type="pack" data-dest-left="84.1%" data-dest-top="73.6%" data-dest-rot="0deg">
+        <img src="4.png" id="item4" class="item" style="left: 68.0%; top: 39.7%; width: 134px;" draggable="false" data-type="pack" data-dest-left="87.7%" data-dest-top="59.1%" data-dest-rot="45deg">
+        
+        <!-- Items 5-7 -->
+        <img src="5.png" id="item5" class="item" style="left: 1.4%; top: 31.4%; width: 96px;" draggable="false" data-type="reject">
+        <img src="6.png" id="item6" class="item" style="left: 50.9%; top: 58.8%; width: 98px;" draggable="false" data-type="reject">
+        <img src="7.png" id="item7" class="item" style="left: 59.4%; top: 83.0%; width: 72px;" draggable="false" data-type="reject">
+
+        <!-- The Snow Leopard Cub -->
+        <img src="leopard1.gif" id="leopard" style="left: 45%; top: 50%;" draggable="false">
+    </div>
+
+    <script>
+        const leopard = document.getElementById('leopard');
+        const container = document.getElementById('game-container');
+        const backpack = document.getElementById('backpack');
+        const items = document.querySelectorAll('.item');
+        const counterDisplay = document.getElementById('counter');
+        const endScreen = document.getElementById('end-screen');
+        
+        let isDragging = false;
+        let shiftX, shiftY;
+        let actionTimeout;
+        let itemsTried = 0; 
+        const totalItems = 7;
+        
+        // Custom Trigger Radius
+        const triggerRadius = 12; 
+
+        // Audio Context setup
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+        }
+
+        // --- AUDIO ENGINE ---
+        
+        function playVictorySound() {
+            if (!audioCtx) return;
+            const playNote = (freq, startTime, duration) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+                
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                
+                osc.start(startTime);
+                osc.stop(startTime + duration);
+            };
+            
+            const now = audioCtx.currentTime;
+            playNote(523.25, now, 0.2);        // C
+            playNote(659.25, now + 0.1, 0.2);  // E
+            playNote(783.99, now + 0.2, 0.2);  // G
+            playNote(1046.50, now + 0.3, 0.4); // High C
+        }
+
+        function playWrongSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            osc.type = 'sawtooth'; 
+            
+            osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.4);
+            
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+            
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.4);
+        }
+
+        // --- VISUAL EFFECTS ---
+
+        function playGlitterEffect(item) {
+            const rect = item.getBoundingClientRect();
+            
+            for (let i = 0; i < 80; i++) {
+                const glitter = document.createElement('div');
+                glitter.className = 'glitter-particle';
+                glitter.innerHTML = Math.random() > 0.5 ? '✦' : '✨';
+                
+                const randomX = (rect.left - 15) + (Math.random() * (rect.width + 30));
+                const randomY = (rect.top - 15) + (Math.random() * (rect.height + 30));
+                
+                glitter.style.left = randomX + 'px';
+                glitter.style.top = randomY + 'px';
+                glitter.style.fontSize = (Math.random() * 25 + 15) + 'px';
+                
+                const animDuration = Math.random() * 1.5 + 1.5; 
+                const animDelay = Math.random() * 0.5;
+                
+                glitter.style.animation = `glitter-twinkle ${animDuration}s ease-in-out ${animDelay}s forwards`;
+                
+                document.body.appendChild(glitter);
+                
+                setTimeout(() => glitter.remove(), (animDuration + animDelay) * 1000);
+            }
+        }
+
+
+        // --- MATH ENGINE & DRAG LOGIC ---
+        
+        leopard.addEventListener('mousedown', function(event) {
+            isDragging = true;
+            initAudio(); 
+            
+            clearTimeout(actionTimeout);
+            
+            items.forEach(item => {
+                if(item.getAttribute('data-done') !== 'true') {
+                    item.removeAttribute('data-processing');
+                    item.classList.remove('glow');
+                }
+            });
+
+            leopard.src = 'leopard2.gif';
+            
+            const rect = leopard.getBoundingClientRect();
+            shiftX = event.clientX - rect.left;
+            shiftY = event.clientY - rect.top;
+
+            leopard.style.zIndex = 1000;
+        });
+
+        document.addEventListener('mousemove', function(event) {
+            if (!isDragging) return;
+
+            let newLeft = event.clientX - shiftX;
+            let newTop = event.clientY - shiftY;
+
+            const maxLeft = container.clientWidth - leopard.getBoundingClientRect().width;
+            const maxTop = container.clientHeight - leopard.getBoundingClientRect().height;
+
+            if (newLeft < 0) newLeft = 0;
+            if (newTop < 0) newTop = 0;
+            if (newLeft > maxLeft) newLeft = maxLeft;
+            if (newTop > maxTop) newTop = maxTop;
+
+            leopard.style.left = newLeft + 'px';
+            leopard.style.top = newTop + 'px';
+
+            const leopardRect = leopard.getBoundingClientRect();
+            
+            const triggerX = leopardRect.left + (leopardRect.width * 0.16);
+            const triggerY = leopardRect.top + (leopardRect.height * 0.67);
+
+            items.forEach(item => {
+                if (item.style.display === 'none' || item.getAttribute('data-done') === 'true') return;
+
+                const itemRect = item.getBoundingClientRect();
+
+                const isColliding = (
+                    triggerX >= (itemRect.left - triggerRadius) &&
+                    triggerX <= (itemRect.right + triggerRadius) &&
+                    triggerY >= (itemRect.top - triggerRadius) &&
+                    triggerY <= (itemRect.bottom + triggerRadius)
+                );
+
+                if (isColliding || item.getAttribute('data-processing') === 'true') {
+                    item.classList.add('glow');
+                } else {
+                    item.classList.remove('glow');
+                }
+            });
+        });
+
+        document.addEventListener('mouseup', function() {
+            if (!isDragging) return;
+            isDragging = false;
+            leopard.style.zIndex = 10;
+            
+            let hitItem = false;
+
+            items.forEach(item => {
+                if (item.classList.contains('glow') && item.style.display !== 'none' && item.getAttribute('data-processing') !== 'true' && item.getAttribute('data-done') !== 'true') {
+                    hitItem = true;
+                    item.setAttribute('data-processing', 'true');
+                    handleInteraction(item);
+                }
+            });
+
+            if (!hitItem) {
+                leopard.src = 'leopard1.gif';
+            }
+        });
+
+        // --- GAMEPLAY LOGIC ---
+        
+        function handleInteraction(item) {
+            const type = item.getAttribute('data-type');
+            leopard.src = 'leopard3.gif';
+            
+            actionTimeout = setTimeout(() => {
+                
+                item.classList.remove('glow');
+                item.removeAttribute('data-processing');
+                item.setAttribute('data-done', 'true');
+
+                if (type === 'pack') {
+                    item.style.transition = 'none';
+
+                    item.style.left = item.getAttribute('data-dest-left');
+                    item.style.top = item.getAttribute('data-dest-top');
+                    item.style.transform = `rotate(${item.getAttribute('data-dest-rot')})`;
+                    item.style.zIndex = "2"; 
+
+                    playVictorySound();
+
+                    setTimeout(() => {
+                        playGlitterEffect(item);
+                    }, 50);
+
+                } else if (type === 'reject') {
+                    playWrongSound();
+
+                    const currentRect = item.getBoundingClientRect();
+                    let currentLeft = currentRect.left;
+                    let currentTop = currentRect.top;
+                    
+                    let newLeft = currentLeft;
+                    let newTop = currentTop; 
+
+                    if (item.id === 'item5') {
+                        newLeft = currentLeft + 120;
+                        if (newLeft > container.clientWidth - currentRect.width) {
+                            newLeft = container.clientWidth - currentRect.width; 
+                        }
+                    } else if (item.id === 'item6' || item.id === 'item7') {
+                        newLeft = currentLeft - 120;
+                        if (newLeft < 0) {
+                            newLeft = 0; 
+                        }
+                    }
+
+                    item.style.left = newLeft + 'px';
+                    item.style.top = newTop + 'px';
+                }
+
+                itemsTried++;
+                counterDisplay.innerText = `${itemsTried} / ${totalItems}`;
+
+                // Check for Game Completion
+                if (itemsTried === totalItems) {
+                    setTimeout(() => {
+                        endScreen.style.display = 'flex';
+                        leopard.style.display = 'none'; // Hides the main leopard
+                    }, 1000); 
+                }
+
+                // Only revert the sprite if the game isn't over yet
+                if (itemsTried < totalItems) {
+                    leopard.src = 'leopard1.gif';
+                }
+
+            }, 4000); 
+        }
+    </script>
+</body>
+</html>
