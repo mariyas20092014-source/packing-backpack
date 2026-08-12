@@ -3,37 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Snow Leopard Packing Game - Fullscreen</title>
-    <!-- Importing a beautiful, playful font for the title and counter -->
+    <title>Snow Leopard Packing Game - Genially Ready</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&display=swap" rel="stylesheet">
     
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #2c3e50;
+            background-color: #1a1a1a; /* Dark background for letterboxing */
             font-family: sans-serif;
-            overflow: hidden; /* Prevents scrollbars */
+            overflow: hidden; 
+            /* Flexbox to keep the game perfectly centered in Genially */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
         }
 
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100vh; 
             background-image: url('background.jpeg');
-            background-size: cover;
+            /* 100% 100% prevents cropping. The @media rules prevent stretching. */
+            background-size: 100% 100%; 
             background-position: center;
             overflow: hidden;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- THE GENIALLY @MEDIA FIX --- */
+        /* If the window is wider than 16:9, lock the height to 100% and scale width */
+        @media (min-aspect-ratio: 16/9) {
+            #game-container {
+                height: 100vh;
+                width: 177.78vh; /* 100 * (16/9) */
+            }
+        }
+
+        /* If the window is taller than 16:9, lock the width to 100% and scale height */
+        @media (max-aspect-ratio: 16/9) {
+            #game-container {
+                width: 100vw;
+                height: 56.25vw; /* 100 * (9/16) */
+            }
         }
 
         /* --- UI ELEMENTS --- */
         #game-title {
             position: absolute;
-            top: 30px;
+            top: 4%;
             width: 100%;
             text-align: center;
             font-family: 'Fredoka', sans-serif;
-            font-size: 42px;
+            font-size: clamp(24px, 4vw, 42px); /* Scales with the screen */
             color: #fff;
             text-shadow: 2px 4px 8px rgba(0,0,0,0.6);
             z-index: 100;
@@ -42,10 +64,10 @@
 
         #counter {
             position: absolute;
-            top: 30px;
-            right: 40px;
+            top: 4%;
+            right: 4%;
             font-family: 'Fredoka', sans-serif;
-            font-size: 48px;
+            font-size: clamp(28px, 5vw, 48px);
             color: #f1c40f;
             text-shadow: 2px 4px 8px rgba(0,0,0,0.6);
             z-index: 100;
@@ -61,21 +83,22 @@
             background-color: rgba(44, 62, 80, 0.95);
             border: 4px solid #f1c40f;
             border-radius: 24px;
-            padding: 40px 60px;
+            padding: 5% 8%;
             box-shadow: 0 15px 50px rgba(0,0,0,0.8);
             z-index: 2000;
             align-items: center;
             gap: 40px;
+            width: max-content;
         }
 
         #end-screen img {
-            width: 250px;
+            width: clamp(150px, 20vw, 250px);
             height: auto;
         }
 
         #end-screen .message {
             font-family: 'Fredoka', sans-serif;
-            font-size: 80px;
+            font-size: clamp(40px, 8vw, 80px);
             color: #fff;
             text-shadow: 0 4px 15px rgba(241, 196, 15, 0.5);
         }
@@ -94,7 +117,8 @@
 
         #leopard {
             position: absolute;
-            width: 450px;
+            /* Leopard size uses % so it shrinks perfectly in smaller iframes */
+            width: 25%; 
             height: auto; 
             cursor: grab;
             z-index: 10;
@@ -135,18 +159,18 @@
         </div>
         
         <!-- The Backpack (z-index 5) -->
-        <img src="backpack.png" id="backpack" style="position: absolute; left: 84.9%; top: 66.4%; width: 187px; z-index: 5;" draggable="false">
+        <img src="backpack.png" id="backpack" style="position: absolute; left: 84.9%; top: 66.4%; width: 12%; z-index: 5;" draggable="false">
 
-        <!-- Items 1-4 -->
-        <img src="1.png" id="item1" class="item" style="left: 6.4%; top: 54.0%; width: 69px;" draggable="false" data-type="pack" data-dest-left="84.2%" data-dest-top="61.2%" data-dest-rot="279deg">
-        <img src="2.png" id="item2" class="item" style="left: 18.6%; top: 86.1%; width: 91px;" draggable="false" data-type="pack" data-dest-left="85.0%" data-dest-top="61.8%" data-dest-rot="4deg">
-        <img src="3.png" id="item3" class="item" style="left: 27.9%; top: 54.2%; width: 51px;" draggable="false" data-type="pack" data-dest-left="84.1%" data-dest-top="73.6%" data-dest-rot="0deg">
-        <img src="4.png" id="item4" class="item" style="left: 68.0%; top: 39.7%; width: 134px;" draggable="false" data-type="pack" data-dest-left="87.7%" data-dest-top="59.1%" data-dest-rot="45deg">
+        <!-- Items 1-4 (Width converted to % for stable scaling) -->
+        <img src="1.png" id="item1" class="item" style="left: 6.4%; top: 54.0%; width: 4.5%;" draggable="false" data-type="pack" data-dest-left="84.2%" data-dest-top="61.2%" data-dest-rot="279deg">
+        <img src="2.png" id="item2" class="item" style="left: 18.6%; top: 86.1%; width: 6%;" draggable="false" data-type="pack" data-dest-left="85.0%" data-dest-top="61.8%" data-dest-rot="4deg">
+        <img src="3.png" id="item3" class="item" style="left: 27.9%; top: 54.2%; width: 3.3%;" draggable="false" data-type="pack" data-dest-left="84.1%" data-dest-top="73.6%" data-dest-rot="0deg">
+        <img src="4.png" id="item4" class="item" style="left: 68.0%; top: 39.7%; width: 8.7%;" draggable="false" data-type="pack" data-dest-left="87.7%" data-dest-top="59.1%" data-dest-rot="45deg">
         
-        <!-- Items 5-7 -->
-        <img src="5.png" id="item5" class="item" style="left: 1.4%; top: 31.4%; width: 96px;" draggable="false" data-type="reject">
-        <img src="6.png" id="item6" class="item" style="left: 50.9%; top: 58.8%; width: 98px;" draggable="false" data-type="reject">
-        <img src="7.png" id="item7" class="item" style="left: 59.4%; top: 83.0%; width: 72px;" draggable="false" data-type="reject">
+        <!-- Items 5-7 (Width converted to %) -->
+        <img src="5.png" id="item5" class="item" style="left: 1.4%; top: 31.4%; width: 6.2%;" draggable="false" data-type="reject">
+        <img src="6.png" id="item6" class="item" style="left: 50.9%; top: 58.8%; width: 6.4%;" draggable="false" data-type="reject">
+        <img src="7.png" id="item7" class="item" style="left: 59.4%; top: 83.0%; width: 4.7%;" draggable="false" data-type="reject">
 
         <!-- The Snow Leopard Cub -->
         <img src="leopard1.gif" id="leopard" style="left: 45%; top: 50%;" draggable="false">
@@ -201,10 +225,10 @@
             };
             
             const now = audioCtx.currentTime;
-            playNote(523.25, now, 0.2);        // C
-            playNote(659.25, now + 0.1, 0.2);  // E
-            playNote(783.99, now + 0.2, 0.2);  // G
-            playNote(1046.50, now + 0.3, 0.4); // High C
+            playNote(523.25, now, 0.2);        
+            playNote(659.25, now + 0.1, 0.2);  
+            playNote(783.99, now + 0.2, 0.2);  
+            playNote(1046.50, now + 0.3, 0.4); 
         }
 
         function playWrongSound() {
@@ -283,11 +307,14 @@
         document.addEventListener('mousemove', function(event) {
             if (!isDragging) return;
 
-            let newLeft = event.clientX - shiftX;
-            let newTop = event.clientY - shiftY;
+            // Updated math engine to account for centered letterboxing
+            const containerRect = container.getBoundingClientRect();
 
-            const maxLeft = container.clientWidth - leopard.getBoundingClientRect().width;
-            const maxTop = container.clientHeight - leopard.getBoundingClientRect().height;
+            let newLeft = event.clientX - containerRect.left - shiftX;
+            let newTop = event.clientY - containerRect.top - shiftY;
+
+            const maxLeft = container.offsetWidth - leopard.getBoundingClientRect().width;
+            const maxTop = container.offsetHeight - leopard.getBoundingClientRect().height;
 
             if (newLeft < 0) newLeft = 0;
             if (newTop < 0) newTop = 0;
@@ -372,26 +399,29 @@
                     playWrongSound();
 
                     const currentRect = item.getBoundingClientRect();
-                    let currentLeft = currentRect.left;
-                    let currentTop = currentRect.top;
+                    const containerRect = container.getBoundingClientRect();
                     
-                    let newLeft = currentLeft;
-                    let newTop = currentTop; 
+                    // Convert exact pixels back to % based on container size for the slide effect
+                    let currentLeftPx = currentRect.left - containerRect.left;
+                    let currentTopPx = currentRect.top - containerRect.top;
+                    
+                    let newLeftPx = currentLeftPx;
+                    let newTopPx = currentTopPx; 
 
                     if (item.id === 'item5') {
-                        newLeft = currentLeft + 120;
-                        if (newLeft > container.clientWidth - currentRect.width) {
-                            newLeft = container.clientWidth - currentRect.width; 
+                        newLeftPx = currentLeftPx + (container.offsetWidth * 0.1); // Move right by 10%
+                        if (newLeftPx > container.offsetWidth - currentRect.width) {
+                            newLeftPx = container.offsetWidth - currentRect.width; 
                         }
                     } else if (item.id === 'item6' || item.id === 'item7') {
-                        newLeft = currentLeft - 120;
-                        if (newLeft < 0) {
-                            newLeft = 0; 
+                        newLeftPx = currentLeftPx - (container.offsetWidth * 0.1); // Move left by 10%
+                        if (newLeftPx < 0) {
+                            newLeftPx = 0; 
                         }
                     }
 
-                    item.style.left = newLeft + 'px';
-                    item.style.top = newTop + 'px';
+                    item.style.left = (newLeftPx / container.offsetWidth * 100) + '%';
+                    item.style.top = (newTopPx / container.offsetHeight * 100) + '%';
                 }
 
                 itemsTried++;
@@ -401,11 +431,10 @@
                 if (itemsTried === totalItems) {
                     setTimeout(() => {
                         endScreen.style.display = 'flex';
-                        leopard.style.display = 'none'; // Hides the main leopard
+                        leopard.style.display = 'none'; 
                     }, 1000); 
                 }
 
-                // Only revert the sprite if the game isn't over yet
                 if (itemsTried < totalItems) {
                     leopard.src = 'leopard1.gif';
                 }
